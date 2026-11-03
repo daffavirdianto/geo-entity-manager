@@ -1,0 +1,173 @@
+:root {
+  --paper: #f4f6f5;
+  --card: #ffffff;
+  --ink: #16252b;
+  --ink-2: #4b5d66;
+  --line: #d5ddda;
+  --brand: #0f5c6e;
+  --brand-dark: #0b4654;
+  --danger: #b42318;
+  --active: #1f8a5b;
+  --maintenance: #d48806;
+  --inactive: #78858d;
+  --draft: #7c3aed;
+  --radius: 6px;
+  --shadow: 0 6px 24px rgba(22, 37, 43, 0.18);
+  font-family: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--ink);
+  line-height: 1.45;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body { background: var(--paper); font-size: 14px; }
+h1, h2, p, dl, dd, ul { margin: 0; padding: 0; }
+ul { list-style: none; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* ---------- layout ---------- */
+.app { display: grid; grid-template-columns: 340px 1fr; height: 100dvh; }
+.stage { position: relative; min-width: 0; min-height: 0; }
+.map { position: absolute; inset: 0; z-index: 0; }
+/* While a form is open the map picks positions: crosshair cursor, and existing
+   markers let clicks fall through to the map (only the draft marker stays draggable). */
+.stage--picking .leaflet-container,
+.stage--picking .leaflet-grab,
+.stage--picking .leaflet-dragging .leaflet-grab { cursor: crosshair !important; }
+.stage--picking .pin-wrap:not(.pin-wrap--draft) { pointer-events: none !important; }
+
+/* ---------- sidebar ---------- */
+.sidebar {
+  display: flex; flex-direction: column; min-height: 0;
+  background: var(--card); border-right: 1px solid var(--line);
+}
+.sidebar__head { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 12px; gap: 8px; }
+.sidebar__head h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+.filters { padding: 0 16px 12px; display: grid; gap: 8px; }
+.filters__row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sidebar__count { padding: 0 16px 8px; font-size: 12px; color: var(--ink-2); min-height: 20px; }
+.list { flex: 1; overflow-y: auto; border-top: 1px solid var(--line); }
+.sidebar__clear { margin: 8px 16px 12px; }
+.note { padding: 20px 16px; color: var(--ink-2); display: grid; gap: 10px; justify-items: start; }
+.note--error { color: var(--danger); }
+
+.item {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 10px 16px; border: 0; border-bottom: 1px solid var(--line);
+  background: transparent; text-align: left; cursor: pointer; font: inherit; color: inherit;
+}
+.item:hover { background: var(--paper); }
+.item.is-selected { background: #e5f0f2; box-shadow: inset 3px 0 0 var(--brand); }
+.item__text { display: grid; min-width: 0; }
+.item__name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item__meta { font-size: 12px; color: var(--ink-2); }
+
+/* ---------- controls ---------- */
+input, select, textarea {
+  width: 100%; font: inherit; color: inherit; background: #fff;
+  border: 1px solid #aab7b3; border-radius: var(--radius); padding: 8px 10px;
+}
+textarea { resize: vertical; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--brand); outline-offset: 0; border-color: var(--brand); }
+
+.btn {
+  font: inherit; font-weight: 600; padding: 8px 14px; border-radius: var(--radius);
+  border: 1px solid #aab7b3; background: #fff; color: var(--ink); cursor: pointer;
+}
+.btn:hover:not(:disabled) { background: var(--paper); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn--primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn--primary:hover:not(:disabled) { background: var(--brand-dark); }
+.btn--danger { color: var(--danger); border-color: #e0aaa5; }
+.btn--danger:hover:not(:disabled) { background: #fdf1f0; }
+.btn--ghost { border-color: transparent; color: var(--brand); background: transparent; }
+.icon-btn {
+  margin-left: auto; width: 32px; height: 32px; border: 0; border-radius: var(--radius);
+  background: transparent; font-size: 22px; line-height: 1; color: var(--ink-2); cursor: pointer;
+}
+.icon-btn:hover { background: var(--paper); color: var(--ink); }
+
+/* ---------- panel (detail + form) ---------- */
+.panel {
+  position: absolute; z-index: 1100; top: 16px; right: 16px; width: 360px;
+  max-height: calc(100% - 32px); overflow-y: auto;
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
+  padding: 16px;
+}
+.panel__head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.panel__head h2 { font-size: 17px; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; }
+.panel__actions { display: flex; gap: 8px; margin-top: 16px; }
+
+.facts { display: grid; grid-template-columns: 96px 1fr; gap: 8px 12px; }
+.facts dt { color: var(--ink-2); }
+.facts dd { overflow-wrap: anywhere; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-2); }
+
+.badge { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 12px; font-weight: 600; color: #fff; }
+.badge--active { background: var(--active); }
+.badge--maintenance { background: var(--maintenance); }
+.badge--inactive { background: var(--inactive); }
+
+/* ---------- form ---------- */
+.form { display: grid; gap: 12px; }
+.form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field { display: grid; gap: 4px; }
+.field__wrap { display: grid; gap: 4px; }
+.field__label { font-weight: 600; display: flex; justify-content: space-between; }
+.field__hint { font-weight: 400; color: var(--ink-2); font-size: 12px; }
+.field--error input, .field--error select, .field--error textarea { border-color: var(--danger); }
+.field__error, .form__error { color: var(--danger); font-size: 13px; }
+.coords { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px 12px; display: grid; gap: 8px; margin: 0; min-width: 0; }
+.coords legend { font-weight: 600; padding: 0 4px; }
+.hint { color: var(--ink-2); font-size: 12px; }
+
+/* ---------- map overlays ---------- */
+.banner {
+  position: absolute; z-index: 1000; top: 16px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 99px; font-weight: 500;
+  box-shadow: var(--shadow); max-width: calc(100% - 420px); text-align: center;
+}
+.toast-region { position: absolute; z-index: 1200; left: 50%; bottom: 28px; transform: translateX(-50%); }
+.toast { background: var(--ink); color: #fff; padding: 10px 16px; border-radius: var(--radius); box-shadow: var(--shadow); }
+
+.dialog { border: 0; border-radius: 10px; padding: 20px; width: min(420px, calc(100% - 32px)); box-shadow: var(--shadow); color: var(--ink); }
+.dialog::backdrop { background: rgba(22, 37, 43, 0.45); }
+.dialog h2 { font-size: 17px; margin-bottom: 8px; overflow-wrap: anywhere; }
+
+/* ---------- markers: shape = type, colour = status ---------- */
+.pin-wrap { background: none; border: 0; }
+.pin {
+  --c: var(--inactive);
+  display: block; width: 20px; height: 20px; margin: 4px;
+  background: var(--c); border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.12s;
+}
+.pin--active { --c: var(--active); }
+.pin--maintenance { --c: var(--maintenance); }
+.pin--inactive { --c: var(--inactive); }
+.pin--vehicle { border-radius: 50%; }
+.pin--iot { border-radius: 4px; }
+.pin--facility { transform: rotate(45deg) scale(0.88); border-radius: 2px; }
+.pin--other { border-radius: 50%; background: #fff; border: 4px solid var(--c); }
+.pin.is-selected { outline: 3px solid var(--ink); outline-offset: 2px; }
+.pin--facility.is-selected { transform: rotate(45deg) scale(1.05); }
+.pin--draft { border-radius: 50%; background: var(--draft); border-style: dashed; width: 22px; height: 22px; margin: 3px; cursor: grab; }
+.pin--static { width: 16px; height: 16px; margin: 0; box-shadow: none; border-width: 2px; flex: none; }
+.pin--static.pin--other { border-width: 3px; }
+.pin--static.pin--facility { transform: rotate(45deg) scale(0.85); }
+
+.leaflet-tooltip { font-family: inherit; font-weight: 600; }
+
+/* ---------- small screens ---------- */
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: minmax(0, 38dvh) minmax(0, 1fr); }
+  .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }
+  .panel { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 70%; }
+  .banner { max-width: calc(100% - 24px); top: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

@@ -1,0 +1,27 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      PORT: "8080"
+      DATA_FILE: /data/entities.json
+      SEED: "true"
+    volumes:
+      - entity-data:/data
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+
+volumes:
+  entity-data:
